@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "esbuild src/popup.ts --bundle --minify --outfile=dist/popup.js --platform=browser --target=es2020 && cp popup.html dist/popup.html && cp -r icons dist/",
+    "build": "node ./scripts/build.js",
     "watch": "esbuild src/popup.ts --bundle --outfile=dist/popup.js --platform=browser --target=es2020 --watch",
     "clean": "rimraf dist"
   },
