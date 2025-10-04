@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Webcomic Tracker",
+  "version": "0.1.0",
+  "description": "Track your webcomic reading progress locally with export/import.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Webcomic Tracker"
+  },
+  "permissions": [
+    "storage",
+    "downloads",
+    "activeTab",
+    "contextMenus"
+  ],
+  "icons": {
+    "48": "icons/icon48.png"
+  }
+}

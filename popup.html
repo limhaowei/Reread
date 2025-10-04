@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Webcomic Tracker</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div id="app">
+      <form id="add-form">
+        <input id="title" placeholder="Series title" required />
+        <input id="chapter" placeholder="Chapter (e.g. 12 or S1E3)" />
+        <input id="url" placeholder="Optional current chapter URL" />
+        <button type="submit">Add</button>
+      </form>
+
+      <ul id="list"></ul>
+
+      <div id="controls">
+        <button id="export">Export .json</button>
+        <input id="import-file" type="file" accept="application/json" />
+        <button id="clear">Clear all</button>
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
