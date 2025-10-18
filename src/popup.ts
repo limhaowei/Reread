@@ -11,27 +11,74 @@ async function render() {
   list.innerHTML = "";
   for (const entry of store.entries.slice().sort((a, b) => b.updatedAt - a.updatedAt)) {
     const li = document.createElement("li");
-    li.className = "item";
+    li.className = "card";
     const left = document.createElement("div");
-    left.innerHTML = `<div><strong>${escapeHtml(entry.title)}</strong></div><div class='meta'>${escapeHtml(entry.chapter)} ${entry.url ? `— <a href='#' data-url='${escapeHtml(entry.url)}'>open</a>` : ""}</div>`;
+    left.style.flex = "1";
+    left.innerHTML = `<div><strong>${escapeHtml(entry.title)}</strong></div>`;
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    const urlPart = entry.url ? ` — <a href='#' data-url='${escapeHtml(entry.url)}'>open</a>` : "";
+    meta.innerHTML = `Chapter `;
+
+    const chapterInput = document.createElement("input");
+    chapterInput.className = "chapter-inline";
+    chapterInput.type = "number";
+    chapterInput.value = String(entry.chapter);
+    chapterInput.setAttribute("aria-label", `Chapter for ${entry.title}`);
+
+    meta.appendChild(chapterInput);
+    if (entry.url) {
+      const anchor = document.createElement("span");
+      anchor.innerHTML = urlPart;
+      meta.appendChild(anchor);
+    }
+
     const controls = document.createElement("div");
     controls.className = "controls";
-    const edit = document.createElement("button");
-    edit.textContent = "Edit";
+    const dec = document.createElement("button");
+    dec.textContent = "−";
+    const inc = document.createElement("button");
+    inc.textContent = "+";
     const del = document.createElement("button");
     del.textContent = "Delete";
-    controls.appendChild(edit);
+
+    controls.appendChild(dec);
+    controls.appendChild(inc);
     controls.appendChild(del);
+
     li.appendChild(left);
+    li.appendChild(meta);
     li.appendChild(controls);
     list.appendChild(li);
 
-    edit.addEventListener("click", async () => {
-      (el<HTMLInputElement>("title")).value = entry.title;
-      (el<HTMLInputElement>("chapter")).value = entry.chapter;
-      (el<HTMLInputElement>("url")).value = entry.url || "";
-      // remove old id if present on form
-      el("add-form")!.setAttribute("data-edit-id", entry.id);
+    // inline edit: save on blur or Enter key
+    chapterInput.addEventListener("keydown", async (ev) => {
+      if (ev.key === "Enter") {
+        (ev.target as HTMLInputElement).blur();
+      }
+    });
+    chapterInput.addEventListener("blur", async () => {
+      const v = Number(chapterInput.value || 0);
+      if (!Number.isFinite(v)) return;
+      entry.chapter = Math.max(0, v);
+      entry.updatedAt = Date.now();
+      await saveStore(store);
+      await render();
+    });
+
+    inc.addEventListener("click", async () => {
+      entry.chapter = Number(entry.chapter || 0) + 1;
+      entry.updatedAt = Date.now();
+      await saveStore(store);
+      await render();
+    });
+
+    dec.addEventListener("click", async () => {
+      entry.chapter = Math.max(0, Number(entry.chapter || 0) - 1);
+      entry.updatedAt = Date.now();
+      await saveStore(store);
+      await render();
     });
 
     del.addEventListener("click", async () => {
@@ -40,7 +87,7 @@ async function render() {
       await render();
     });
 
-    const openLink = left.querySelector("a[data-url]") as HTMLAnchorElement | null;
+    const openLink = meta.querySelector("a[data-url]") as HTMLAnchorElement | null;
     if (openLink) {
       openLink.addEventListener("click", (ev) => {
         ev.preventDefault();
@@ -64,7 +111,8 @@ async function init() {
   form.addEventListener("submit", async (ev) => {
     ev.preventDefault();
     const title = (el<HTMLInputElement>("title")).value.trim();
-    const chapter = (el<HTMLInputElement>("chapter")).value.trim();
+    const chapterRaw = (el<HTMLInputElement>("chapter")).value.trim();
+    const chapter = chapterRaw === "" ? 0 : Number(chapterRaw);
     const url = (el<HTMLInputElement>("url")).value.trim();
     if (!title) return;
     const store = await loadStore();
@@ -79,7 +127,7 @@ async function init() {
       }
       form.removeAttribute("data-edit-id");
     } else {
-      const entry: ComicEntry = { id: idForNew(), title, chapter, url: url || undefined, updatedAt: Date.now() };
+      const entry: ComicEntry = { id: idForNew(), title, chapter: Number(chapter || 0), url: url || undefined, updatedAt: Date.now() };
       store.entries.push(entry);
     }
     (el<HTMLInputElement>("title")).value = "";
@@ -92,6 +140,18 @@ async function init() {
   el<HTMLButtonElement>("export").addEventListener("click", async () => {
     const store = await loadStore();
     exportStore(store);
+  });
+
+  el<HTMLButtonElement>("increment").addEventListener("click", () => {
+    const input = el<HTMLInputElement>("chapter");
+    const v = Number(input.value || 0) + 1;
+    input.value = String(v);
+  });
+
+  el<HTMLButtonElement>("decrement").addEventListener("click", () => {
+    const input = el<HTMLInputElement>("chapter");
+    const v = Math.max(0, Number(input.value || 0) - 1);
+    input.value = String(v);
   });
 
   el<HTMLInputElement>("import-file").addEventListener("change", async (ev) => {

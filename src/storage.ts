@@ -10,7 +10,13 @@ export async function loadStore(): Promise<Store> {
         resolve({ entries: [] });
         return;
       }
-      resolve(raw as Store);
+      // coerce chapter to number for migration
+      const store = raw as Store;
+      store.entries = store.entries.map((e) => ({
+        ...e,
+        chapter: Number.isFinite(Number((e as any).chapter)) ? Number((e as any).chapter) : 0,
+      }));
+      resolve(store as Store);
     });
   });
 }
@@ -40,7 +46,8 @@ export async function importStore(file: File): Promise<Store> {
   parsed.entries = parsed.entries.map((e) => ({
     id: e.id || `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
     title: String(e.title || ""),
-    chapter: String(e.chapter || ""),
+    // coerce chapter to number; allow older string-based chapters
+    chapter: Number.isFinite(Number((e as any).chapter)) ? Number((e as any).chapter) : 0,
     url: e.url,
     notes: e.notes,
     updatedAt: typeof e.updatedAt === "number" ? e.updatedAt : Date.now(),

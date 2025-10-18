@@ -8,19 +8,30 @@
   </head>
   <body>
     <div id="app">
-      <form id="add-form">
+      <header>
+        <h1>Webcomic Tracker</h1>
+      </header>
+
+      <form id="add-form" class="add-form">
         <input id="title" placeholder="Series title" required />
-        <input id="chapter" placeholder="Chapter (e.g. 12 or S1E3)" />
-        <input id="url" placeholder="Optional current chapter URL" />
-        <button type="submit">Add</button>
+        <div class="chapter-controls">
+          <button type="button" id="decrement">−</button>
+          <input id="chapter" type="number" inputmode="numeric" placeholder="Chapter" />
+          <button type="button" id="increment">+</button>
+        </div>
+        <input id="url" placeholder="Optional chapter URL" />
+        <button type="submit" class="primary">Add</button>
       </form>
 
-      <ul id="list"></ul>
+      <ul id="list" aria-live="polite"></ul>
 
       <div id="controls">
-        <button id="export">Export .json</button>
-        <input id="import-file" type="file" accept="application/json" />
-        <button id="clear">Clear all</button>
+        <button id="export">Export</button>
+        <label class="file-label">
+          <input id="import-file" type="file" accept="application/json" />
+          Import
+        </label>
+        <button id="clear" class="danger">Clear</button>
       </div>
     </div>
 
